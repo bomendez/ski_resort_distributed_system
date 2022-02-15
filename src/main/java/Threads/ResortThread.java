@@ -3,54 +3,75 @@ package Threads;
 import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.ResortsApi;
+import io.swagger.client.model.ResortIDSeasonsBody;
 import io.swagger.client.model.ResortSkiers;
 import io.swagger.client.model.SeasonsList;
 
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.lang.Math.floor;
+
 public class ResortThread implements Runnable {
     // TODO: add id
+    public static int threadId;
     public static ApiClient apiClient;
-    public static Integer skierID;
     public static CyclicBarrier synk;
+    public static Integer skierIdBegin;
+    public static Integer skierIdEnd;
+    public static Integer startTime;
+    public static Integer endTime;
+    public static Integer numThreads;
+    public static Integer numSkiers;
+    public static Integer numRuns;
+    public static double numCalls;
+    public static Integer numLifts;
+    public static Integer timeValue;
 
-    public ResortThread(ApiClient client, Integer numSkiers, CyclicBarrier barrier) {
+    public ResortThread(Integer id, ApiClient client, CyclicBarrier barrier, Integer skierIdStart, Integer skierIdStop,
+                        Integer start, Integer end, Integer threadCount, Integer skierCount, Integer runCount,
+                        double callCount, Integer liftCount) {
+        threadId = id;
         apiClient = client;
-        skierID = numSkiers;
         synk = barrier;
+        skierIdBegin = skierIdStart;
+        skierIdEnd = skierIdStop;
+        startTime = start;
+        endTime = end;
+        numThreads = threadCount;
+        numSkiers = skierCount;
+        numRuns = runCount;
+        numCalls = callCount;
+        numLifts = ThreadLocalRandom.current().nextInt(liftCount);
+        timeValue = ThreadLocalRandom.current().nextInt(start, end);
     }
 
     public void run() {
-        ResortsApi apiInstance = new ResortsApi(apiClient);
-        Integer resortID = 56; // Integer | ID of the resort of interest
-        try {
-            SeasonsList result = apiInstance.getResortSeasons(resortID);
-            System.out.println(result);
-        } catch (ApiException e) {
-            System.err.println("Exception when calling ResortsApi#getResortSeasons");
-            e.printStackTrace();
-        }
+        Integer resortID = ThreadLocalRandom.current().nextInt(skierIdBegin, skierIdEnd);
+        Integer waitTime = (int) Math.floor(Math.random()*(endTime - startTime + 1) + startTime);
 
-//        ResortsApi apiInstance = new ResortsApi();
-//        Integer resortID = 56; // Integer | ID of the resort of interest
-//        Integer seasonID = 56; // Integer | ID of the resort of interest
-//        Integer dayID = 56; // Integer | ID of the resort of interest
-//        try {
-//            ResortSkiers result = apiInstance.getResortSkiersDay(resortID, seasonID, dayID);
-//            System.out.println(result);
-//        } catch (ApiException e) {
-//            System.err.println("Exception when calling ResortsApi#getResortSkiersDay");
-//            e.printStackTrace();
-//        }
-        try {
-            // TO DO insert code to wait on the CyclicBarrier
-            System.out.println("Thread waiting at barrier");
-            synk.await();
-        } catch (InterruptedException | BrokenBarrierException ex) {
-            Logger.getLogger(ResortThread.class.getName()).log(Level.SEVERE, null, ex);
+        ResortsApi apiInstance = new ResortsApi(apiClient);
+        ResortIDSeasonsBody body = new ResortIDSeasonsBody(); // ResortIDSeasonsBody | Specify new Season value
+
+
+        System.out.println("resort Id " + resortID);
+        for (int i=0; i < numCalls; i++) {
+            try {
+                apiInstance.addSeason(body, resortID);
+            } catch (ApiException e) {
+                System.err.println("Exception when calling ResortsApi#addSeason");
+                e.printStackTrace();
+            }
+
+            try {
+                System.out.println("Thread " + i + " waiting at barrier");
+                synk.await();
+            } catch (InterruptedException | BrokenBarrierException ex) {
+                Logger.getLogger(ResortThread.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 }
