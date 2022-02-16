@@ -4,22 +4,11 @@ import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.ResortsApi;
 import io.swagger.client.model.ResortIDSeasonsBody;
-import io.swagger.client.model.ResortSkiers;
-import io.swagger.client.model.SeasonsList;
-
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import static java.lang.Math.floor;
 
 public class ResortThread implements Runnable {
-    // TODO: add id
     public static int threadId;
     public static ApiClient apiClient;
-    public static CyclicBarrier synk;
     public static Integer skierIdBegin;
     public static Integer skierIdEnd;
     public static Integer startTime;
@@ -31,12 +20,11 @@ public class ResortThread implements Runnable {
     public static Integer numLifts;
     public static Integer timeValue;
 
-    public ResortThread(Integer id, ApiClient client, CyclicBarrier barrier, Integer skierIdStart, Integer skierIdStop,
+    public ResortThread(Integer id, ApiClient client, Integer skierIdStart, Integer skierIdStop,
                         Integer start, Integer end, Integer threadCount, Integer skierCount, Integer runCount,
                         double callCount, Integer liftCount) {
         threadId = id;
         apiClient = client;
-        synk = barrier;
         skierIdBegin = skierIdStart;
         skierIdEnd = skierIdStop;
         startTime = start;
@@ -55,7 +43,7 @@ public class ResortThread implements Runnable {
 
         ResortsApi apiInstance = new ResortsApi(apiClient);
         ResortIDSeasonsBody body = new ResortIDSeasonsBody(); // ResortIDSeasonsBody | Specify new Season value
-
+        body.setYear("1991");
 
         System.out.println("resort Id " + resortID);
         for (int i=0; i < numCalls; i++) {
@@ -64,13 +52,6 @@ public class ResortThread implements Runnable {
             } catch (ApiException e) {
                 System.err.println("Exception when calling ResortsApi#addSeason");
                 e.printStackTrace();
-            }
-
-            try {
-                System.out.println("Thread " + i + " waiting at barrier");
-                synk.await();
-            } catch (InterruptedException | BrokenBarrierException ex) {
-                Logger.getLogger(ResortThread.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

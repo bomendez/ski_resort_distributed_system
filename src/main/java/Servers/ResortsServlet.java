@@ -128,9 +128,6 @@ public class ResortsServlet extends HttpServlet {
                     sb.append(s);
                 }
                 Resorts resorts = (Resorts) gson.fromJson(sb.toString(), Resorts.class);
-                /**
-                 * how to set body
-                 */
 //                resorts.setResortID(request.getParameter());
                 Status status = new Status();
                 status.setSuccess(true);
