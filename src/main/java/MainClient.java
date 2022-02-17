@@ -18,6 +18,8 @@ public class MainClient {
     public final static int endDayPhase2 = 360;
     public final static int startDayPhase3 = 361;
     public final static int endDayPhase3 = 420;
+    public final static int THROUGHPUT = 5;
+    public static double throughputFinal;
 
     /**
      * sets numThreads to threads / 4
@@ -173,7 +175,8 @@ public class MainClient {
         System.out.printf("Total Run Time: %s milliseconds%n", totalRunTime);
         System.out.println("Number of Successful Requests: " + RequestLog.getNumSuccessfulRequests());
         System.out.println("Number of Unsuccessful Requests: " + RequestLog.getNumUnsuccessfulRequests());
-        System.out.println("Throughput: ");
+        throughputFinal = RequestLog.getNumSuccessfulRequests()/totalRunTime*THROUGHPUT;
+        System.out.println("Throughput: " + throughputFinal);
     }
 
 }

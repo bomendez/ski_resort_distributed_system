@@ -132,27 +132,27 @@ public class SkierServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_CREATED);
             // do any sophisticated processing with urlParts which contains all the url params
             // TODO: process url params in `urlParts`
-            try {
-                StringBuilder sb = new StringBuilder();
-                String s;
-                while ((s = request.getReader().readLine()) != null) {
-                    sb.append(s);
-                }
-                Skiers skiers = (Skiers) gson.fromJson(sb.toString(), Skiers.class);
-                Status status = new Status();
-                status.setSuccess(true);
-                status.setDescription("success");
-                response.getOutputStream().print(gson.toJson(status));
-                response.getOutputStream().flush();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                Status status = new Status();
-                status.setSuccess(false);
-                status.setDescription(ex.getMessage());
-                response.getOutputStream().print(gson.toJson(status));
-                response.getOutputStream().flush();
-            }
-            response.getWriter().write(body);
+//            try {
+//                StringBuilder sb = new StringBuilder();
+//                String s;
+//                while ((s = request.getReader().readLine()) != null) {
+//                    sb.append(s);
+//                }
+//                Skiers skiers = (Skiers) gson.fromJson(sb.toString(), Skiers.class);
+//                Status status = new Status();
+//                status.setSuccess(true);
+//                status.setDescription("success");
+//                response.getOutputStream().print(gson.toJson(status));
+//                response.getOutputStream().flush();
+//            } catch (Exception ex) {
+//                ex.printStackTrace();
+//                Status status = new Status();
+//                status.setSuccess(false);
+//                status.setDescription(ex.getMessage());
+//                response.getOutputStream().print(gson.toJson(status));
+//                response.getOutputStream().flush();
+//            }
+//            response.getWriter().write(body);
             System.out.println("else finished");
         }
     }
