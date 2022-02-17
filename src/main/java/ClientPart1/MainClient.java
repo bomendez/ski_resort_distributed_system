@@ -1,4 +1,5 @@
-import Threads.SkierThread;
+package ClientPart1;
+
 import Utilities.RequestLog;
 import io.swagger.client.ApiClient;
 
@@ -19,7 +20,7 @@ public class MainClient {
     public final static int startDayPhase3 = 361;
     public final static int endDayPhase3 = 420;
     public final static int THROUGHPUT = 5;
-    public static double throughputFinal;
+    public static long throughputFinal;
 
     /**
      * sets numThreads to threads / 4
@@ -27,24 +28,24 @@ public class MainClient {
      *               must be less than 1024
      */
     private static void setNumThreads(int threads) {
-        if (threads > 1024) {throw new IllegalArgumentException();}
+        if (threads < 0 || threads > 1024) {throw new IllegalArgumentException("Max threads exceeded 1024");}
         numThreads = threads;
         System.out.println("numThreads " + numThreads);
     }
 
 
     private static void setNumSkiers(int skiers) {
-        if (skiers > 100000) {throw new IllegalArgumentException();}
+        if (skiers < 0 || skiers > 100000) {throw new IllegalArgumentException("Max skiers exceeded 100000");}
         numSkiers = skiers;
     }
 
     private static void setSkiLifts(int skiLifts) {
-        if (skiLifts < 5 || skiLifts > 60) {throw new IllegalArgumentException();}
+        if (skiLifts < 5 || skiLifts > 60) {throw new IllegalArgumentException("Max ski lifts not between 5 and 60");}
         numLifts = skiLifts;
     }
 
     private static void setNumRuns(int runs) {
-        if (runs > 20) {throw new IllegalArgumentException();}
+        if (runs < 0 || runs > 20) {throw new IllegalArgumentException("Max runs exceeded 20");}
         numRuns = runs;
     }
 
@@ -125,7 +126,7 @@ public class MainClient {
         double numCallsPhase2 = floor(numRuns*0.6)*(numSkiers/numThreads);
 
         for (int i = 0; i < numThreads; i++) {
-            System.out.println("Phase 2 Thread " + i + " start: " + skierIdStartPhase1 + " end: " + skierIdStopPhase1);
+            System.out.println("Phase 2 Thread " + i + " start: " + skierIdStartPhase2 + " end: " + skierIdStopPhase2);
             SkierThread skierThreadPhase2 = new SkierThread(i, apiClient, skierIdStartPhase2,
                     skierIdStopPhase2, startDayPhase2, endDayPhase2, numThreads, numSkiers, numRuns,
                     numCallsPhase2, numLifts, phase2Latch);
@@ -150,13 +151,13 @@ public class MainClient {
         int skierIdStopPhase3 = numSkiers/numThreadsPhase3;
 
         for (int i = 0; i < numThreadsPhase3; i++) {
-            System.out.println("Phase 3 Thread " + i + " start: " + skierIdStartPhase1 + " end: " + skierIdStopPhase1);
+            System.out.println("Phase 3 Thread " + i + " start: " + skierIdStartPhase3 + " end: " + skierIdStopPhase3);
             SkierThread skierThreadPhase3 = new SkierThread(i, apiClient, skierIdStartPhase3,
                     skierIdStopPhase3, startDayPhase3, endDayPhase3, numThreadsPhase3, numSkiers, numRuns,
                     numCallsPhase3, numLifts, phase3Latch);
             new Thread(skierThreadPhase3).start();
-            skierIdStartPhase1 = skierIdStopPhase1 + 1;
-            skierIdStopPhase1 += numSkiers/numThreadsPhase1;
+            skierIdStartPhase3 = skierIdStopPhase3 + 1;
+            skierIdStopPhase3 += numSkiers/numThreadsPhase3;
         }
 
         final long endPhase3 = System.currentTimeMillis();
@@ -173,9 +174,10 @@ public class MainClient {
 
 
         System.out.printf("Total Run Time: %s milliseconds%n", totalRunTime);
+        System.out.println("Total Number of Requests: " + RequestLog.getNumRequests());
         System.out.println("Number of Successful Requests: " + RequestLog.getNumSuccessfulRequests());
         System.out.println("Number of Unsuccessful Requests: " + RequestLog.getNumUnsuccessfulRequests());
-        throughputFinal = RequestLog.getNumSuccessfulRequests()/totalRunTime*THROUGHPUT;
+        throughputFinal = RequestLog.getNumRequests()/(totalRunTime / 1000);
         System.out.println("Throughput: " + throughputFinal);
     }
 

@@ -1,4 +1,4 @@
-package Threads;
+package ClientPart2;
 
 import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
@@ -11,7 +11,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
 import Utilities.RequestLog;
 
-public class SkierThread implements Runnable {
+public class SkierThread2 implements Runnable {
     public static int threadId;
     public static ApiClient apiClient;
     public static Integer skierIdBegin;
@@ -38,7 +38,7 @@ public class SkierThread implements Runnable {
     public static List<String> RESORTS = new ArrayList<>();
     public static List<String> SEASON = new ArrayList<>();
 
-    public SkierThread(Integer id, ApiClient client, Integer skierIdStart, Integer skierIdStop,
+    public SkierThread2(Integer id, ApiClient client, Integer skierIdStart, Integer skierIdStop,
                        Integer start, Integer end, Integer threadCount, Integer skierCount, Integer runCount,
                        double callCount, Integer liftCount, CountDownLatch latch) {
         threadId = id;
@@ -58,25 +58,26 @@ public class SkierThread implements Runnable {
 
     public void apiCall() {
         while(attempts < MAX_RETRY) {
+            RequestLog.incRequestCount();
             try {
+                final long startTime = System.currentTimeMillis();
                 apiInstance.writeNewLiftRide(body, resortID, seasonID, dayID, skierID);
                 RequestLog.logSuccess();
                 break;
             } catch (ApiException e) {
-                System.err.println("Exception when calling SkiersApi#writeNewLiftRide");
-                e.printStackTrace();
                 attempts++;
+//                System.err.println("Exception when calling SkiersApi#writeNewLiftRide");
+//                e.printStackTrace();
             }
         }
         if (attempts == 6) {
             RequestLog.logFailure();
         }
+        final long endTime = System.currentTimeMillis();
+        final long latency = endTime - startTime;
     }
 
     public void run() {
-
-
-
         skierID = ThreadLocalRandom.current().nextInt(skierIdBegin, skierIdEnd);
         waitTime = Integer.valueOf((int) Math.floor(Math.random()*(endTime - startTime + 1) + startTime));
         body = new LiftRide();
