@@ -25,6 +25,15 @@ public class SkierThread implements Runnable {
     public static Integer numLifts;
     public static Integer timeValue;
     public static CountDownLatch completed;
+    public static Integer skierID;
+    public static Integer waitTime;
+    public static LiftRide body;
+    public static SkiersApi apiInstance;
+    public final Integer resortID = 30;
+    public final String seasonID = "20";
+    public final String dayID = "10";
+    public static int attempts = 0;
+    public final int MAX_RETRY = 5;
 
     public static List<String> RESORTS = new ArrayList<>();
     public static List<String> SEASON = new ArrayList<>();
@@ -47,31 +56,37 @@ public class SkierThread implements Runnable {
         completed = latch;
     }
 
+    public void apiCall() {
+        while(attempts < MAX_RETRY) {
+            try {
+                apiInstance.writeNewLiftRide(body, resortID, seasonID, dayID, skierID);
+                RequestLog.logSuccess();
+                break;
+            } catch (ApiException e) {
+                System.err.println("Exception when calling SkiersApi#writeNewLiftRide");
+                e.printStackTrace();
+                attempts++;
+            }
+        }
+        if (attempts == 6) {
+            RequestLog.logFailure();
+        }
+    }
+
     public void run() {
-        Integer resortID = 30;
-        String seasonID = "20";
-        String dayID = "10";
-        Integer skierID = ThreadLocalRandom.current().nextInt(skierIdBegin, skierIdEnd);
-        Integer waitTime = Integer.valueOf((int) Math.floor(Math.random()*(endTime - startTime + 1) + startTime));
-        LiftRide body = new LiftRide();
+
+
+
+        skierID = ThreadLocalRandom.current().nextInt(skierIdBegin, skierIdEnd);
+        waitTime = Integer.valueOf((int) Math.floor(Math.random()*(endTime - startTime + 1) + startTime));
+        body = new LiftRide();
         body.setLiftID(numLifts);
         body.setTime(timeValue);
         body.setWaitTime(waitTime);
 
-        SkiersApi apiInstance = new SkiersApi(apiClient);
+        apiInstance = new SkiersApi(apiClient);
         for (int i=0; i < numCalls; i++) {
-        try {
-            System.out.println("thread started " + Thread.currentThread().getId() + ":" + i);
-
-            /**
-             * This call throwing ApiException
-             */
-            apiInstance.writeNewLiftRide(body, resortID, seasonID, dayID, skierID);
-            RequestLog.logSuccess();
-        } catch (ApiException e) {
-            System.err.println("Exception when calling SkiersApi#writeNewLiftRide");
-            e.printStackTrace();
-        }
+            apiCall();
         }
         completed.countDown();
     }

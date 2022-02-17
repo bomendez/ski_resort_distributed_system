@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 @WebServlet(name = "Servers.SkierServlet", value = "/skiers/*")
 public class SkierServlet extends HttpServlet {
     private String VERTICAL = "vertical";
-    private String[] dayParams = new String[]{"seasons", "day", "skier"};
+    private String[] dayParams = new String[]{"seasons", "days", "skiers"};
     private Gson gson = new Gson();
 
     private boolean isUrlValid(String[] urlParts) {
@@ -107,7 +107,7 @@ public class SkierServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("application/json");
         String urlPath = request.getPathInfo();
-
+        System.out.println(urlPath);
         // retrieve and parse body
         BufferedReader buffer = request.getReader();
         final String body = buffer.lines().collect(Collectors.joining());
@@ -128,6 +128,7 @@ public class SkierServlet extends HttpServlet {
             response.getWriter().write("improper url");
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         } else {
+            System.out.println("else reached");
             response.setStatus(HttpServletResponse.SC_CREATED);
             // do any sophisticated processing with urlParts which contains all the url params
             // TODO: process url params in `urlParts`
@@ -152,6 +153,7 @@ public class SkierServlet extends HttpServlet {
                 response.getOutputStream().flush();
             }
             response.getWriter().write(body);
+            System.out.println("else finished");
         }
     }
 
