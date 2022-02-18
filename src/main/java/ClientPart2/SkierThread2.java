@@ -2,6 +2,7 @@ package ClientPart2;
 
 import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
+import io.swagger.client.ApiResponse;
 import io.swagger.client.api.SkiersApi;
 import io.swagger.client.model.LiftRide;
 
@@ -58,23 +59,29 @@ public class SkierThread2 implements Runnable {
 
     public void apiCall() {
         while(attempts < MAX_RETRY) {
+            ApiPerformance apiPerformance = new ApiPerformance();
+            int responseCode;
             RequestLog.incRequestCount();
+            final long startTime = System.currentTimeMillis();
             try {
-                final long startTime = System.currentTimeMillis();
-                apiInstance.writeNewLiftRide(body, resortID, seasonID, dayID, skierID);
+                ApiResponse response = apiInstance.writeNewLiftRideWithHttpInfo(body, resortID, seasonID, dayID, skierID);
                 RequestLog.logSuccess();
-                break;
+                responseCode = response.getStatusCode();
+//                attempts++;
             } catch (ApiException e) {
-                attempts++;
-//                System.err.println("Exception when calling SkiersApi#writeNewLiftRide");
-//                e.printStackTrace();
+                e.printStackTrace();
             }
+            final long endTime = System.currentTimeMillis();
+            final long latency = endTime - startTime;
+            apiPerformance.setStartTime(startTime);
+            apiPerformance.setLatency(latency);
+            apiPerformance.setRequestType("POST");
+//            apiPerformance.setResponseCode(responseCode);
+            RequestLog.addApiPerformance(apiPerformance);
         }
         if (attempts == 6) {
             RequestLog.logFailure();
         }
-        final long endTime = System.currentTimeMillis();
-        final long latency = endTime - startTime;
     }
 
     public void run() {

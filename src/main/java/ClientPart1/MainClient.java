@@ -90,6 +90,7 @@ public class MainClient {
         ApiClient apiClient = new ApiClient();
         apiClient.setBasePath(ipAddress);
 
+        RequestLog requestLog = new RequestLog();
 
         /**
          * Phase 1 startup
@@ -97,7 +98,7 @@ public class MainClient {
         final long startPhase1 = System.currentTimeMillis();
         int numThreadsPhase1 = (int) Math.floor(numThreads/4);
         CountDownLatch phase1Latch = new CountDownLatch((int) Math.floor(numThreadsPhase1 * 0.20));
-        double numCallsPhase1 = floor(numRuns*0.2)*(numSkiers/numThreadsPhase1);
+        double numCallsPhase1 = floor((numRuns*0.2)*(numSkiers/numThreadsPhase1));
         int skierIdStartPhase1 = 0;
         int skierIdStopPhase1 = numSkiers/numThreadsPhase1;
 
@@ -105,7 +106,7 @@ public class MainClient {
             System.out.println("Phase 1 Thread " + i + " start: " + skierIdStartPhase1 + " end: " + skierIdStopPhase1);
             SkierThread skierThreadPhase1 = new SkierThread(i, apiClient, skierIdStartPhase1,
                     skierIdStopPhase1, startDayPhase1, endDayPhase1, numThreadsPhase1, numSkiers, numRuns,
-                    numCallsPhase1, numLifts, phase1Latch);
+                    numCallsPhase1, numLifts, phase1Latch, requestLog);
             new Thread(skierThreadPhase1).start();
             skierIdStartPhase1 = skierIdStopPhase1 + 1;
             skierIdStopPhase1 += numSkiers/numThreadsPhase1;
@@ -123,13 +124,13 @@ public class MainClient {
         CountDownLatch phase2Latch = new CountDownLatch((int) Math.floor(numThreads * 0.20));
         int skierIdStartPhase2 = 0;
         int skierIdStopPhase2 = numSkiers/numThreads;
-        double numCallsPhase2 = floor(numRuns*0.6)*(numSkiers/numThreads);
+        double numCallsPhase2 = floor((numRuns*0.6)*(numSkiers/numThreads));
 
         for (int i = 0; i < numThreads; i++) {
             System.out.println("Phase 2 Thread " + i + " start: " + skierIdStartPhase2 + " end: " + skierIdStopPhase2);
             SkierThread skierThreadPhase2 = new SkierThread(i, apiClient, skierIdStartPhase2,
                     skierIdStopPhase2, startDayPhase2, endDayPhase2, numThreads, numSkiers, numRuns,
-                    numCallsPhase2, numLifts, phase2Latch);
+                    numCallsPhase2, numLifts, phase2Latch, requestLog);
             new Thread(skierThreadPhase2).start();
             skierIdStartPhase2 = skierIdStopPhase2 + 1;
             skierIdStopPhase2 += numSkiers/numThreads;
@@ -154,7 +155,7 @@ public class MainClient {
             System.out.println("Phase 3 Thread " + i + " start: " + skierIdStartPhase3 + " end: " + skierIdStopPhase3);
             SkierThread skierThreadPhase3 = new SkierThread(i, apiClient, skierIdStartPhase3,
                     skierIdStopPhase3, startDayPhase3, endDayPhase3, numThreadsPhase3, numSkiers, numRuns,
-                    numCallsPhase3, numLifts, phase3Latch);
+                    numCallsPhase3, numLifts, phase3Latch, requestLog);
             new Thread(skierThreadPhase3).start();
             skierIdStartPhase3 = skierIdStopPhase3 + 1;
             skierIdStopPhase3 += numSkiers/numThreadsPhase3;
@@ -174,10 +175,10 @@ public class MainClient {
 
 
         System.out.printf("Total Run Time: %s milliseconds%n", totalRunTime);
-        System.out.println("Total Number of Requests: " + RequestLog.getNumRequests());
-        System.out.println("Number of Successful Requests: " + RequestLog.getNumSuccessfulRequests());
-        System.out.println("Number of Unsuccessful Requests: " + RequestLog.getNumUnsuccessfulRequests());
-        throughputFinal = RequestLog.getNumRequests()/(totalRunTime / 1000);
+        System.out.println("Total Number of Requests: " + requestLog.getNumRequests());
+        System.out.println("Number of Successful Requests: " + requestLog.getNumSuccessfulRequests());
+        System.out.println("Number of Unsuccessful Requests: " + requestLog.getNumUnsuccessfulRequests());
+        throughputFinal = requestLog.getNumRequests()/(totalRunTime / 1000);
         System.out.println("Throughput: " + throughputFinal);
     }
 

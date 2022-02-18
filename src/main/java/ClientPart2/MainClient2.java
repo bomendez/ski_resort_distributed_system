@@ -167,16 +167,11 @@ public class MainClient2 {
         /**
          * Statistics
          */
+        StatisticsGenerator statisticsGenerator = new StatisticsGenerator();
+        statisticsGenerator.createCSV();
         final long totalRunTime = endPhase3 - startPhase1;
-        System.out.printf("duration Phase 1: %s milliseconds%n", durationPhase1);
-        System.out.printf("duration Phase 2: %s milliseconds%n", durationPhase2);
-        System.out.printf("duration Phase 3: %s milliseconds%n", durationPhase3);
-
-
         System.out.printf("Total Run Time: %s milliseconds%n", totalRunTime);
         System.out.println("Total Number of Requests: " + RequestLog.getNumRequests());
-        System.out.println("Number of Successful Requests: " + RequestLog.getNumSuccessfulRequests());
-        System.out.println("Number of Unsuccessful Requests: " + RequestLog.getNumUnsuccessfulRequests());
         throughputFinal = RequestLog.getNumRequests()/(totalRunTime / 1000);
         System.out.println("Throughput: " + throughputFinal);
     }

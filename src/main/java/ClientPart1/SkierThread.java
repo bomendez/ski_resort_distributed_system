@@ -5,8 +5,6 @@ import io.swagger.client.ApiException;
 import io.swagger.client.api.SkiersApi;
 import io.swagger.client.model.LiftRide;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
 import Utilities.RequestLog;
@@ -29,18 +27,19 @@ public class SkierThread implements Runnable {
     public static Integer waitTime;
     public static LiftRide body;
     public static SkiersApi apiInstance;
+    public static RequestLog requestLog;
     public final Integer resortID = 30;
     public final String seasonID = "20";
     public final String dayID = "10";
     public static int attempts = 0;
     public final int MAX_RETRY = 5;
-
-    public static List<String> RESORTS = new ArrayList<>();
-    public static List<String> SEASON = new ArrayList<>();
+    public static int numSuccesses = 0;
+    public static int numFailures = 0;
+    public static int numRequests = 0;
 
     public SkierThread(Integer id, ApiClient client, Integer skierIdStart, Integer skierIdStop,
                        Integer start, Integer end, Integer threadCount, Integer skierCount, Integer runCount,
-                       double callCount, Integer liftCount, CountDownLatch latch) {
+                       double callCount, Integer liftCount, CountDownLatch latch, RequestLog log) {
         threadId = id;
         apiClient = client;
         skierIdBegin = skierIdStart;
@@ -54,23 +53,24 @@ public class SkierThread implements Runnable {
         numLifts = ThreadLocalRandom.current().nextInt(liftCount);
         timeValue = ThreadLocalRandom.current().nextInt(start, end);
         completed = latch;
+        requestLog = log;
     }
 
     public void apiCall() {
         while(attempts < MAX_RETRY) {
-            RequestLog.incRequestCount();
+            numRequests++;
             try {
                 apiInstance.writeNewLiftRide(body, resortID, seasonID, dayID, skierID);
                 RequestLog.logSuccess();
                 break;
             } catch (ApiException e) {
-                attempts++;
+                attempts++; // move
 //                System.err.println("Exception when calling SkiersApi#writeNewLiftRide");
 //                e.printStackTrace();
             }
         }
         if (attempts == 6) {
-            RequestLog.logFailure();
+            numFailures++; // move to appropriate location
         }
     }
 
@@ -83,9 +83,13 @@ public class SkierThread implements Runnable {
         body.setWaitTime(waitTime);
 
         apiInstance = new SkiersApi(apiClient);
+        System.out.println("numCalls: " + numCalls);
         for (int i=0; i < numCalls; i++) {
             apiCall();
         }
+        requestLog.addNumSuccessfulRequests(numSuccesses);
+        requestLog.addNumUnsuccessfulRequests(numFailures);
+        requestLog.addRequestCount(numRequests);
         completed.countDown();
     }
 }
